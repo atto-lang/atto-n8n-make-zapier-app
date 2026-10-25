@@ -1,0 +1,13 @@
+dependencies/
+.work/
+__pycache__/
+*.pyc
+.env
+
+tooling/target/
+
+contracts/node_modules/
+
+.typespec-json-schema-validator/
+
+generated/assets.ores

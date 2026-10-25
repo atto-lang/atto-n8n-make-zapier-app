@@ -1,0 +1,99 @@
+import module spin from '../dependencies/spin/src/spin';
+import module routes from '../generated/routes';
+import module http_routing from '../dependencies/http-routing/src/http_routing';
+import module views from './views';
+import module assets from '../generated/assets';
+
+define isoactor Dashboard as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("Cache-Control", "no-store");
+    request.set_header("X-Ores-Contract", routes.contract_sha256());
+    request.set_header("X-Content-Type-Options", "nosniff");
+    request.set_header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'");
+    val string page = views.page();
+    val Future<void> response = spin.html(rt borrow request, 200, page);
+    await response;
+    self.end();
+    return;
+  }
+end
+
+define isoactor Preview as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("Cache-Control", "no-store");
+    val string body = views.preview("Preview reached approval; a real run would now wait for an authorized decision.");
+    val Future<void> response = spin.html(rt borrow request, 200, body);
+    await response;
+    self.end();
+    return;
+  }
+end
+
+define isoactor Health as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    val Future<void> response = spin.json(rt borrow request, 200, "{\"status\":\"development\",\"durable_execution\":false,\"websocket\":false}");
+    await response;
+    self.end();
+    return;
+  }
+end
+
+define isoactor WebsocketUnavailable as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    val Future<void> response = spin.json(rt borrow request, 501, "{\"error\":\"session_websocket_transport_not_implemented\"}");
+    await response;
+    self.end();
+    return;
+  }
+end
+
+pub async routine main(): void {
+  let mut builder = spin.builder();
+    val path_0 = http_routing.path("/static/app.css", arr[http_routing.literal("static"), http_routing.literal("app.css")]);
+    builder.route("GET", rt borrow path_0, http.handler("CssAsset"), 0, 1, "css_asset").unwrap();
+    val path_1 = http_routing.root();
+    builder.route("GET", rt borrow path_1, http.handler("Dashboard"), 0, 1, "dashboard").unwrap();
+    val path_2 = http_routing.path("/healthz", arr[http_routing.literal("healthz")]);
+    builder.route("GET", rt borrow path_2, http.handler("Health"), 0, 1, "healthz").unwrap();
+    val path_3 = http_routing.path("/static/htmx.min.js", arr[http_routing.literal("static"), http_routing.literal("htmx.min.js")]);
+    builder.route("GET", rt borrow path_3, http.handler("HtmxAsset"), 0, 1, "htmx_asset").unwrap();
+    val path_4 = http_routing.path("/preview", arr[http_routing.literal("preview")]);
+    builder.route("POST", rt borrow path_4, http.handler("Preview"), 0, 1, "preview").unwrap();
+    val path_5 = http_routing.path("/ws", arr[http_routing.literal("ws")]);
+    builder.route("GET", rt borrow path_5, http.handler("WebsocketUnavailable"), 0, 1, "websocket").unwrap();
+
+  val app = builder.build().unwrap();
+  val server = http.listen("127.0.0.1", 8080, 64, 65536, 10000);
+  stdio.println("Ores Workflows development server: http://127.0.0.1:8080");
+  loop {
+    val request = await server.accept();
+    app.dispatch(request);
+  }
+  return;
+}
+
+define isoactor HtmxAsset as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("X-Content-Type-Options", "nosniff");
+    val string body = assets.htmx_js();
+    await request.respond(200, "text/javascript; charset=utf-8", body);
+    self.end();
+    return;
+  }
+end
+
+define isoactor CssAsset as
+  receive(ActorMail<String> mail): void {
+    val request = http.claim(mail.value);
+    request.set_header("X-Content-Type-Options", "nosniff");
+    val string body = assets.app_css();
+    await request.respond(200, "text/css; charset=utf-8", body);
+    self.end();
+    return;
+  }
+end

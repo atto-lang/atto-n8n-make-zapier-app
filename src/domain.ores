@@ -1,0 +1,25 @@
+// Pure execution policy. Durable writes and effects belong to the worker adapter.
+define module domain as
+  pub fnc may_transition(string before, string after): bool {
+    if before == "queued" then return after == "running" || after == "cancelled"; fi
+    if before == "running" then
+      return after == "waiting" || after == "succeeded" || after == "failed" || after == "cancelled";
+    fi
+    if before == "waiting" then return after == "queued" || after == "cancelled"; fi
+    return false;
+  }
+  pub fnc retry_delay_ms(int attempt, int base_ms, int cap_ms): Result<int, string> {
+    if attempt < 1 || attempt > 32 || base_ms < 1 || cap_ms < base_ms || cap_ms > 86400000 then
+      return Err("invalid retry policy");
+    fi
+    let int delay = base_ms;
+    for (let int i = 1; i < attempt; i = i + 1) {
+      if delay > cap_ms / 2 then return Ok(cap_ms); fi
+      delay = delay * 2;
+    }
+    return Ok(delay);
+  }
+  pub fnc executable_kind(string kind): bool {
+    return kind == "manual" || kind == "transform" || kind == "approval";
+  }
+end

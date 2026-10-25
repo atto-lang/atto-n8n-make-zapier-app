@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "service": "ores-workflows-development",
+  "version": "0.1.0",
+  "description": "Development SSR slice. No persistence, authentication, or durable workflow execution is served yet.",
+  "map": {
+    "dashboard": {"path":"/", "methods":["GET"], "summary":"Server-rendered development dashboard"},
+    "preview": {"path":"/preview", "methods":["POST"], "summary":"Read-only illustrative HTML fragment; does not create a run"},
+    "healthz": {"path":"/healthz", "methods":["GET"], "response_schema":{"type":"object","additionalProperties":false,"required":["status","durable_execution","websocket"],"properties":{"status":{"const":"development"},"durable_execution":{"const":false},"websocket":{"const":false}}}},
+    "websocket": {"path":"/ws", "methods":["GET"], "transports":["http"], "summary":"Returns 501 until session WebSocket adapter is implemented"},
+    "htmx_asset": {"path":"/static/htmx.min.js", "methods":["GET"]},
+    "css_asset": {"path":"/static/app.css", "methods":["GET"]}
+  }
+}

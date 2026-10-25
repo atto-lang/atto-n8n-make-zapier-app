@@ -1,0 +1,3 @@
+define module routes as
+  pub fnc contract_sha256(): string { return "e6652aebd9612e0aef08d4bf3817460fd3892f5ea6f3cf45cb81c41185d5ce15"; }
+end

@@ -1,0 +1,23 @@
+package ores:workflows@0.1.0;
+
+// Proposed component boundary; host capabilities are not serializable DATA.
+interface execution {
+  type uuid = string;
+  enum run-status { queued, running, waiting, succeeded, failed, cancelled }
+  record run-request {
+    workflow-id: uuid,
+    version-id: uuid,
+    idempotency-key: string,
+    input-json: string,
+  }
+  record run-view {
+    id: uuid,
+    workflow-id: uuid,
+    version-id: uuid,
+    status: run-status,
+  }
+  record execution-error { code: string }
+  start-run: func(request: run-request) -> result<run-view, execution-error>;
+  cancel-run: func(id: uuid) -> result<run-view, execution-error>;
+}
+world workflow-worker { export execution; }

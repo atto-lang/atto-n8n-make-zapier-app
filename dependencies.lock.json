@@ -1,0 +1,30 @@
+{
+  "spin": {
+    "repository": "ores-truffle-oreslang/oreslang-spin",
+    "commit": "87d8123aa22febc3b3ee469a479242941064250c"
+  },
+  "ssr": {
+    "repository": "ores-truffle-oreslang/oreslang-ssr",
+    "commit": "b87a9932a15ac65421cb55b0eb37b20fbad98480"
+  },
+  "http-routing": {
+    "repository": "ores-truffle-oreslang/oreslang-http-routing",
+    "commit": "6c5413221d29f790b691ab9c1ad17b3160aeac9d"
+  },
+  "compiler": {
+    "repository": "ores-truffle-oreslang/oreslang-source.java",
+    "commit": "87a52fa7af40d3541277764533f51850b4db22bd"
+  },
+  "api-docs": {
+    "repository": "oresoftware/api-docs",
+    "commit": "02b566611cca3d9e67bfada9c24df8d2da981cd3"
+  },
+  "pg": {
+    "repository": "ores-truffle-oreslang/postgres-orm.ores",
+    "commit": "337fc5632db40649d529533f975c634a5e69bd51"
+  },
+  "tjsv": {
+    "repository": "ORESoftware/typespec-json-schema-validator",
+    "commit": "2d3b187aec68477cff579f2f3a9275ea5ef62f88"
+  }
+}

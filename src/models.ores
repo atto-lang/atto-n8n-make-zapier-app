@@ -1,0 +1,211 @@
+import module pg from '../dependencies/pg/src/pg';
+
+// Code-first database authority. Constraint strings are authored SQL, never user data.
+define module models as
+  pub fnc schema(): string {
+    let string sql = "";
+    val string table_1 = pg.table("workspaces", arr[
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("name", "text", false).unwrap(),
+      pg.column("created_at", "timestamptz", false).unwrap()
+    ], arr["PRIMARY KEY (id)", "CHECK (length(name) BETWEEN 1 AND 128)"]);
+    sql = sql + table_1;
+    val string table_2 = pg.table("users", arr[
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("subject", "text", false).unwrap(),
+      pg.column("created_at", "timestamptz", false).unwrap()
+    ], arr["PRIMARY KEY (id)", "UNIQUE (subject)"]);
+    sql = sql + table_2;
+    val string table_3 = pg.table("memberships", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("user_id", "uuid", false).unwrap(),
+      pg.column("role", "text", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, user_id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (user_id) REFERENCES users(id)", "CHECK (role IN ('owner','editor','operator','viewer'))"]);
+    sql = sql + table_3;
+    val string table_4 = pg.table("workflows", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("name", "text", false).unwrap(),
+      pg.column("revision", "integer", false).unwrap(),
+      pg.column("archived", "boolean", false).unwrap(),
+      pg.column("created_at", "timestamptz", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "CHECK (length(name) BETWEEN 1 AND 128)", "CHECK (revision >= 1)"]);
+    sql = sql + table_4;
+    val string table_5 = pg.table("workflow_versions", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("workflow_id", "uuid", false).unwrap(),
+      pg.column("number", "integer", false).unwrap(),
+      pg.column("graph", "jsonb", false).unwrap(),
+      pg.column("contract_sha256", "text", false).unwrap(),
+      pg.column("created_at", "timestamptz", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, workflow_id) REFERENCES workflows(workspace_id, id)", "UNIQUE (workspace_id, workflow_id, id)", "UNIQUE (workspace_id, workflow_id, number)", "CHECK (number >= 1)", "CHECK (jsonb_typeof(graph) = 'object')", "CHECK (contract_sha256 ~ '^[0-9a-f]{64}$')"]);
+    sql = sql + table_5;
+    val string table_6 = pg.table("publications", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("workflow_id", "uuid", false).unwrap(),
+      pg.column("version_id", "uuid", false).unwrap(),
+      pg.column("published_at", "timestamptz", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, workflow_id)", "FOREIGN KEY (workspace_id, workflow_id, version_id) REFERENCES workflow_versions(workspace_id, workflow_id, id)"]);
+    sql = sql + table_6;
+    val string table_7 = pg.table("connector_versions", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("key", "text", false).unwrap(),
+      pg.column("version", "text", false).unwrap(),
+      pg.column("manifest", "jsonb", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "UNIQUE (workspace_id, key, version)", "CHECK (jsonb_typeof(manifest) = 'object')"]);
+    sql = sql + table_7;
+    val string table_8 = pg.table("credentials", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("connector_version_id", "uuid", false).unwrap(),
+      pg.column("name", "text", false).unwrap(),
+      pg.column("secret_ref", "text", false).unwrap(),
+      pg.column("created_at", "timestamptz", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, connector_version_id) REFERENCES connector_versions(workspace_id, id)"]);
+    sql = sql + table_8;
+    val string table_9 = pg.table("triggers", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("workflow_id", "uuid", false).unwrap(),
+      pg.column("kind", "text", false).unwrap(),
+      pg.column("config", "jsonb", false).unwrap(),
+      pg.column("enabled", "boolean", false).unwrap(),
+      pg.column("cursor", "jsonb", true).unwrap(),
+      pg.column("next_fire_at", "timestamptz", true).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, workflow_id) REFERENCES workflows(workspace_id, id)", "CHECK (kind IN ('manual','webhook','schedule','poll'))"]);
+    sql = sql + table_9;
+    val string table_10 = pg.table("trigger_events", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("trigger_id", "uuid", false).unwrap(),
+      pg.column("external_key", "text", false).unwrap(),
+      pg.column("payload_ref", "text", false).unwrap(),
+      pg.column("received_at", "timestamptz", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, trigger_id) REFERENCES triggers(workspace_id, id)", "UNIQUE (workspace_id, trigger_id, external_key)"]);
+    sql = sql + table_10;
+    val string table_11 = pg.table("runs", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("workflow_id", "uuid", false).unwrap(),
+      pg.column("version_id", "uuid", false).unwrap(),
+      pg.column("trigger_event_id", "uuid", true).unwrap(),
+      pg.column("idempotency_key", "text", false).unwrap(),
+      pg.column("status", "text", false).unwrap(),
+      pg.column("input", "jsonb", false).unwrap(),
+      pg.column("created_at", "timestamptz", false).unwrap(),
+      pg.column("finished_at", "timestamptz", true).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, workflow_id, version_id) REFERENCES workflow_versions(workspace_id, workflow_id, id)", "FOREIGN KEY (workspace_id, trigger_event_id) REFERENCES trigger_events(workspace_id, id)", "UNIQUE (workspace_id, workflow_id, idempotency_key)", "CHECK (status IN ('queued','running','waiting','succeeded','failed','cancelled'))", "CHECK ((status IN ('succeeded','failed','cancelled')) = (finished_at IS NOT NULL))"]);
+    sql = sql + table_11;
+    val string table_12 = pg.table("step_attempts", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("run_id", "uuid", false).unwrap(),
+      pg.column("node_id", "text", false).unwrap(),
+      pg.column("item_key", "text", false).unwrap(),
+      pg.column("attempt", "integer", false).unwrap(),
+      pg.column("status", "text", false).unwrap(),
+      pg.column("input_ref", "text", true).unwrap(),
+      pg.column("output_ref", "text", true).unwrap(),
+      pg.column("error_code", "text", true).unwrap(),
+      pg.column("started_at", "timestamptz", true).unwrap(),
+      pg.column("finished_at", "timestamptz", true).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, run_id) REFERENCES runs(workspace_id, id)", "UNIQUE (workspace_id, run_id, node_id, item_key, attempt)", "CHECK (attempt BETWEEN 1 AND 32)", "CHECK (status IN ('queued','running','waiting','succeeded','failed','cancelled'))"]);
+    sql = sql + table_12;
+    val string table_13 = pg.table("jobs", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("run_id", "uuid", false).unwrap(),
+      pg.column("step_attempt_id", "uuid", true).unwrap(),
+      pg.column("available_at", "timestamptz", false).unwrap(),
+      pg.column("lease_owner", "text", true).unwrap(),
+      pg.column("lease_until", "timestamptz", true).unwrap(),
+      pg.column("fence", "bigint", false).unwrap(),
+      pg.column("done", "boolean", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, run_id) REFERENCES runs(workspace_id, id)", "FOREIGN KEY (workspace_id, step_attempt_id) REFERENCES step_attempts(workspace_id, id)", "CHECK (fence >= 0)", "CHECK ((lease_owner IS NULL) = (lease_until IS NULL))"]);
+    sql = sql + table_13;
+    val string table_14 = pg.table("run_events", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("run_id", "uuid", false).unwrap(),
+      pg.column("sequence", "bigint", false).unwrap(),
+      pg.column("kind", "text", false).unwrap(),
+      pg.column("data", "jsonb", false).unwrap(),
+      pg.column("created_at", "timestamptz", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, run_id) REFERENCES runs(workspace_id, id)", "UNIQUE (workspace_id, run_id, sequence)", "CHECK (sequence > 0)"]);
+    sql = sql + table_14;
+    val string table_15 = pg.table("approvals", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("run_id", "uuid", false).unwrap(),
+      pg.column("node_id", "text", false).unwrap(),
+      pg.column("status", "text", false).unwrap(),
+      pg.column("requested_at", "timestamptz", false).unwrap(),
+      pg.column("decided_at", "timestamptz", true).unwrap(),
+      pg.column("decided_by", "uuid", true).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, run_id) REFERENCES runs(workspace_id, id)", "FOREIGN KEY (workspace_id, decided_by) REFERENCES memberships(workspace_id, user_id)", "UNIQUE (workspace_id, run_id, node_id)", "CHECK (status IN ('pending','approved','rejected','expired'))", "CHECK ((status = 'pending') = (decided_at IS NULL))"]);
+    sql = sql + table_15;
+    val string table_16 = pg.table("artifacts", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("run_id", "uuid", false).unwrap(),
+      pg.column("storage_ref", "text", false).unwrap(),
+      pg.column("sha256", "text", false).unwrap(),
+      pg.column("media_type", "text", false).unwrap(),
+      pg.column("bytes", "bigint", false).unwrap(),
+      pg.column("expires_at", "timestamptz", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, run_id) REFERENCES runs(workspace_id, id)", "CHECK (bytes >= 0)", "CHECK (sha256 ~ '^[0-9a-f]{64}$')"]);
+    sql = sql + table_16;
+    val string table_17 = pg.table("document_extractions", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("artifact_id", "uuid", false).unwrap(),
+      pg.column("schema_sha256", "text", false).unwrap(),
+      pg.column("model_ref", "text", false).unwrap(),
+      pg.column("fields", "jsonb", false).unwrap(),
+      pg.column("provenance", "jsonb", false).unwrap(),
+      pg.column("review_status", "text", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, artifact_id) REFERENCES artifacts(workspace_id, id)", "CHECK (review_status IN ('pending','accepted','rejected'))"]);
+    sql = sql + table_17;
+    val string table_18 = pg.table("desktop_tasks", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("run_id", "uuid", false).unwrap(),
+      pg.column("device_id", "text", false).unwrap(),
+      pg.column("action_manifest", "jsonb", false).unwrap(),
+      pg.column("approval_id", "uuid", false).unwrap(),
+      pg.column("status", "text", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, run_id) REFERENCES runs(workspace_id, id)", "FOREIGN KEY (workspace_id, approval_id) REFERENCES approvals(workspace_id, id)", "CHECK (status IN ('proposed','approved','running','succeeded','failed','cancelled'))"]);
+    sql = sql + table_18;
+    val string table_19 = pg.table("sessions", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("user_id", "uuid", false).unwrap(),
+      pg.column("token_hash", "text", false).unwrap(),
+      pg.column("expires_at", "timestamptz", false).unwrap(),
+      pg.column("revoked_at", "timestamptz", true).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, user_id) REFERENCES memberships(workspace_id, user_id)", "UNIQUE (token_hash)"]);
+    sql = sql + table_19;
+    val string table_20 = pg.table("outbox", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("run_id", "uuid", false).unwrap(),
+      pg.column("destination", "text", false).unwrap(),
+      pg.column("effect_key", "text", false).unwrap(),
+      pg.column("payload_ref", "text", false).unwrap(),
+      pg.column("delivered_at", "timestamptz", true).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, run_id) REFERENCES runs(workspace_id, id)", "UNIQUE (workspace_id, destination, effect_key)"]);
+    sql = sql + table_20;
+    val string table_21 = pg.table("audit_events", arr[
+      pg.column("workspace_id", "uuid", false).unwrap(),
+      pg.column("id", "uuid", false).unwrap(),
+      pg.column("user_id", "uuid", true).unwrap(),
+      pg.column("action", "text", false).unwrap(),
+      pg.column("resource_id", "uuid", false).unwrap(),
+      pg.column("created_at", "timestamptz", false).unwrap()
+    ], arr["PRIMARY KEY (workspace_id, id)", "FOREIGN KEY (workspace_id) REFERENCES workspaces(id)", "FOREIGN KEY (workspace_id, user_id) REFERENCES memberships(workspace_id, user_id)"]);
+    sql = sql + table_21;
+    return sql;
+  }
+end

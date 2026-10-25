@@ -1,0 +1,12 @@
+{
+  "catalogSha256": "9873b091a00b1e44216928eaeb294db0ad1d6e7683be7e8490b1f999be081d68",
+  "contracts": [
+    {
+      "contractSha256": "e6652aebd9612e0aef08d4bf3817460fd3892f5ea6f3cf45cb81c41185d5ce15",
+      "operationCount": 6,
+      "service": "ores-workflows-development",
+      "source": "live.route-map.json"
+    }
+  ],
+  "formatVersion": 1
+}
