@@ -6,7 +6,7 @@ BEGIN;
 
 -- Migration must protect *all* workspace-scoped relations. A permissive
 -- policy would OR with workspace_isolation and negate the identity fence.
-DO $
+DO $$
 DECLARE protected_count integer;
 DECLARE force_rls_count integer;
 BEGIN
@@ -30,7 +30,7 @@ BEGIN
     RAISE EXCEPTION 'test failed: workspace table lost FORCE ROW LEVEL SECURITY';
   END IF;
 END;
-$;
+$$;
 
 INSERT INTO workspaces (id,name,created_at) VALUES
  ('30000000-0000-4000-8000-000000000001','Auth tenant A',now()),
