@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
+python3 -m unittest discover -s "$root/tests" -p test_sql_source_preflight.py
+python3 "$root/scripts/check_sql_source.py"
 pg_bin="${PG_BIN:-/opt/homebrew/opt/postgresql@17/bin}"
 tmp="$(mktemp -d /tmp/ores-workflows-pg.XXXXXX)"
 cleanup() { "$pg_bin/pg_ctl" -D "$tmp/data" -m immediate stop >/dev/null 2>&1 || true; rm -rf "$tmp"; }
