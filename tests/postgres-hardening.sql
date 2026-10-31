@@ -120,4 +120,58 @@ BEGIN
   END;
 END;
 $$;
+
+-- A run is pinned to its original graph/input, even when a second valid
+-- published version exists inside the same workspace.
+DO $
+BEGIN
+  BEGIN
+    UPDATE runs SET version_id='10000000-0000-4000-8000-000000000021'
+      WHERE id='10000000-0000-4000-8000-000000000030';
+    RAISE EXCEPTION 'test failed: run version replaced';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM <> 'run identity and pinned input are immutable' THEN RAISE; END IF;
+  END;
+END;
+$;
+
+DO $
+BEGIN
+  BEGIN
+    UPDATE approvals SET run_id='10000000-0000-4000-8000-000000000031'
+      WHERE id='10000000-0000-4000-8000-000000000080';
+    RAISE EXCEPTION 'test failed: approval reassigned to another run';
+  EXCEPTION WHEN raise_exception THEN
+    -- The approved approval is already terminal; identity guard or
+    -- one-way decision guard may reject first depending on trigger order.
+    IF SQLERRM NOT IN ('approval identity is immutable','approval decision is immutable') THEN RAISE; END IF;
+  END;
+END;
+$;
+
+-- A legitimately leased/completed job cannot be revived after completion.
+UPDATE jobs SET lease_owner='worker',lease_until=now() + interval '30 seconds',
+  fence=1 WHERE id='10000000-0000-4000-8000-000000000051';
+DO $
+BEGIN
+  BEGIN
+    UPDATE jobs SET fence=0 WHERE id='10000000-0000-4000-8000-000000000051';
+    RAISE EXCEPTION 'test failed: job fence decreased';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM <> 'job identity or fence cannot be changed backward' THEN RAISE; END IF;
+  END;
+END;
+$;
+UPDATE jobs SET done=true,lease_owner=NULL,lease_until=NULL
+  WHERE id='10000000-0000-4000-8000-000000000051';
+DO $
+BEGIN
+  BEGIN
+    UPDATE jobs SET done=false WHERE id='10000000-0000-4000-8000-000000000051';
+    RAISE EXCEPTION 'test failed: completed job reopened';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM <> 'completed job is immutable' THEN RAISE; END IF;
+  END;
+END;
+$;
 ROLLBACK;
