@@ -37,7 +37,7 @@ DO $$ BEGIN
   -- mistake the new correct rejection for a failed SQL assertion.
   IF SQLERRM NOT IN ('terminal run is immutable', 'invalid run transition: succeeded -> running') THEN RAISE; END IF;
  END;
-END $;
+END $$;
 CREATE ROLE ores_test_client NOLOGIN NOSUPERUSER NOBYPASSRLS;
 INSERT INTO ores_db_principal_workspaces (db_principal, workspace_id) VALUES
  ('ores_test_client', '00000000-0000-4000-8000-000000000001');
