@@ -21,6 +21,18 @@ permissions:
   contents: read
 
 jobs:
+  # Deliberately no checkout, private-source access, services, or secrets.
+  # This distinguishes runner/admission failure from PostgreSQL service setup.
+  runner_canary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Prove runner admitted a shell step
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'runner-admitted sha=%s run=%s\\n' "$GITHUB_SHA" "$GITHUB_RUN_ID"
+
   postgres:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
