@@ -4,6 +4,34 @@
 -- have no superuser or SET SESSION AUTHORIZATION privilege.
 BEGIN;
 
+-- Migration must protect *all* workspace-scoped relations. A permissive
+-- policy would OR with workspace_isolation and negate the identity fence.
+DO $
+DECLARE protected_count integer;
+DECLARE force_rls_count integer;
+BEGIN
+  SELECT count(*) INTO protected_count FROM pg_policies
+  WHERE schemaname = 'public'
+    AND policyname = 'verified_db_login'
+    AND permissive = 'RESTRICTIVE'
+    AND cmd = 'ALL';
+  IF protected_count <> 19 THEN
+    RAISE EXCEPTION 'test failed: expected 19 restrictive tenant policies, got %', protected_count;
+  END IF;
+  SELECT count(*) INTO force_rls_count
+    FROM pg_class AS c
+    JOIN pg_namespace AS n ON n.oid = c.relnamespace
+    JOIN pg_policies AS p ON p.schemaname = n.nspname
+      AND p.tablename = c.relname
+    WHERE n.nspname = 'public'
+      AND p.policyname = 'verified_db_login'
+      AND c.relrowsecurity AND c.relforcerowsecurity;
+  IF force_rls_count <> 19 THEN
+    RAISE EXCEPTION 'test failed: workspace table lost FORCE ROW LEVEL SECURITY';
+  END IF;
+END;
+$;
+
 INSERT INTO workspaces (id,name,created_at) VALUES
  ('30000000-0000-4000-8000-000000000001','Auth tenant A',now()),
  ('30000000-0000-4000-8000-000000000002','Auth tenant B',now());
