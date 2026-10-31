@@ -55,3 +55,39 @@ must not be represented as passes for this hardening revision. The worker
 SQL remains a contract, not a deployed/executed worker. Production readiness,
 tenant role security, run claim contention, crash/reclaim, and driver support
 remain open.
+
+## Follow-up draft: durable identity guards (2026-10-30)
+
+This review is a stacked, **unverified** change on top of PR #1, not a merge
+or a production release. It repairs four invalid PL/pgSQL `DO $` / `$;`
+delimiters in the original integrity test (now valid `DO $$` / `$$;`).
+That defect would prevent the earlier adversarial suite from completing on a
+working PostgreSQL runner.
+
+New migration `0005_durable_identity_guards.sql` prevents mutation of
+terminal run receipts, preserves step-attempt identity/terminal state and
+validates step transitions, makes trigger deduplication events immutable,
+and prevents outbox effect keys or delivered receipts from being rewritten
+or deleted. `tests/postgres-durable.sql` adds disposable-DB rejection probes;
+local and GitHub Actions Postgres test entry points now invoke it.
+
+**Evidence level:** GitHub source changes only. No fresh PostgreSQL, native
+Oreslang compiler, or hosted CI execution has passed for this follow-up.
+Earlier PR #1 runs 41166617698 and 41166821948 were reported failed with
+zero executed steps, consistent with admission/infrastructure failure rather
+than application-test evidence. Check job step records again on fresh runs.
+
+**Not solved:** application-role grants, authenticated workspace context,
+cross-tenant hostile SQL session tests, transactional claim/complete execution,
+outbox crash/reconciliation, per-connector capabilities and secret redaction,
+OAuth, CSRF, session/WebSocket actors, native PostgreSQL driver, full workflow
+graph validation, quota enforcement, retention/erasure protocol, and
+exact-head native guest execution. Database triggers do not provide
+authorization or exactly-once third-party side effects. The new immutable
+dedupe tables require a deliberately reviewed retention/migration strategy;
+they must not be truncated as an ad hoc cleanup.
+
+Keep both the foundation PR and this stacked PR draft until the migrations and
+adversarial tests execute in PostgreSQL and the security model is reviewed.
+Private-source mirroring to another organization requires source-transfer
+authorization and approved destination, not merely available Actions minutes.
