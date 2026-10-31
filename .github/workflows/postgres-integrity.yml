@@ -53,6 +53,8 @@ jobs:
         run: psql -X --set=ON_ERROR_STOP=1 -f tests/postgres.sql
       - name: Cross-run, append-only and approval invariants
         run: psql -X --set=ON_ERROR_STOP=1 -f tests/postgres-hardening.sql
+      - name: Durable run and deduplication invariants
+        run: psql -X --set=ON_ERROR_STOP=1 -f tests/postgres-durable.sql
       - name: Fail closed on migration checksum tampering
         shell: bash
         run: |
