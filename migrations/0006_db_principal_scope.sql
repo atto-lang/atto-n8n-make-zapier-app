@@ -3,11 +3,13 @@
 -- PostgreSQL custom GUC values are NOT authentication. An untrusted SQL
 -- principal can set app.workspace_id to any UUID it knows. Require an
 -- independently provisioned database-login-principal authorization too.
+-- Each database login is confined to ONE workspace (not a multi-tenant
+-- connection whose SQL could switch between authorized workspace IDs).
 --
 -- This is a DB principal/workspace admission fence, not end-user RBAC.
--- An application login granted many workspaces still needs authenticated
--- per-request authorization in trusted server code; never expose that
--- privileged connection or raw SQL to untrusted clients.
+-- Trusted application code must select an isolated per-tenant connection and
+-- separately authorize each end-user operation. Never expose connection
+-- credentials or raw SQL to untrusted clients.
 --
 -- Applied by a separately privileged migration owner. Runtime roles must
 -- be NOSUPERUSER, NOBYPASSRLS, non-owners, without DDL/SET ROLE grants.
@@ -16,7 +18,7 @@ CREATE TABLE ores_db_principal_workspaces (
   db_principal name NOT NULL,
   workspace_id uuid NOT NULL REFERENCES workspaces(id),
   created_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (db_principal, workspace_id)
+  PRIMARY KEY (db_principal)
 );
 
 -- Only the migration/security administrator can provision principals.
