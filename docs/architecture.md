@@ -69,6 +69,17 @@ session actors by starting a new actor for every frame.
 7. Pause approvals/waits durably. Resolve an approval with role and revision
    checks, and enqueue its continuation atomically. The request actor can end.
 
+The hardened schema in `migrations/0003_integrity_guards.sql` enforces
+same-run job/step and desktop/approval references, append-only events,
+immutable version deletion protection, one-way approval decisions and job
+lease/fence invariants. Authenticated runtime connections must have no raw
+client-controlled SQL access: `SET LOCAL app.workspace_id` is NOT an
+authentication mechanism because a client with SQL access can set a custom
+PostgreSQL variable. Use separate least-privilege application and migration
+roles and verify membership/capabilities in the trusted server before opening
+a workspace-scoped transaction. Cross-tenant tests with a genuine untrusted
+database principal are still required before any public API is activated.
+
 `contracts/worker.sql` records the claim/complete shape. It is not an implemented
 worker and is not yet covered by contention/crash tests. Concurrency admission,
 heartbeats, cancellation, deterministic branching/joins, loop/item scoping,

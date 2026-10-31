@@ -12,6 +12,7 @@ export PGHOST="$tmp/socket" PGPORT=55443 PGDATABASE=postgres
 "$root/scripts/tool" apply
 "$root/scripts/tool" apply
 psql -X --set=ON_ERROR_STOP=1 --quiet -f "$root/tests/postgres.sql"
+psql -X --set=ON_ERROR_STOP=1 --quiet -f "$root/tests/postgres-hardening.sql"
 # Reject ledger tampering; the runner must fail before attempting any DDL.
 psql -X --set=ON_ERROR_STOP=1 --quiet -c "UPDATE _ores_migrations SET sha256 = repeat('0',64) WHERE name='0001_initial.sql'"
 if "$root/scripts/tool" apply > "$tmp/rejection.log" 2>&1; then

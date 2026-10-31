@@ -40,3 +40,18 @@ Not tested or implemented: native DB transport, worker contention/crash recovery
 connector side effects, session/WebSocket ownership, login/CSRF flows, Zorde,
 real RPC operation round-trip, production deployment, or WIT runtime parity.
 These are product prerequisites, not inferred passes from schema tests.
+
+## Hardening addendum — 2026-10-30
+
+PR head hardening adds a forward-only 0003 migration, cross-run foreign keys,
+append-only event/audit triggers, immutable version deletion protection,
+one-way approval decisions, constrained job fencing, and explicit workspace
+scoping in the illustrative worker SQL. A new PostgreSQL-only Actions workflow
+and disposable-DB SQL adversarial fixtures were added.
+
+**Status: newly added checks have not yet been observed executing.** The
+2026-10-25 local results above apply to the previous foundation snapshot and
+must not be represented as passes for this hardening revision. The worker
+SQL remains a contract, not a deployed/executed worker. Production readiness,
+tenant role security, run claim contention, crash/reclaim, and driver support
+remain open.
