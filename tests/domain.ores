@@ -7,6 +7,26 @@ pub routine main(): void {
   if domain.retry_delay_ms(3, 100, 1000).unwrap() != 400 then panic("backoff"); fi
   if domain.retry_delay_ms(32, 100, 1000).unwrap() != 1000 then panic("cap"); fi
   if !domain.retry_delay_ms(0, 100, 1000).is_err() then panic("bad attempt"); fi
+  // Effect 3 is eligible only after durable checkpoint 2, with the
+  // exact active generation and no prior outbox entry or cancellation.
+  if !domain.may_publish_durable_effect(7, 7, 2, 3, true, false, false)
+    then panic("committed effect must be admitted"); fi
+  if domain.may_publish_durable_effect(7, 6, 2, 3, true, false, false)
+    then panic("stale lease published effect"); fi
+  if domain.may_publish_durable_effect(0, 0, 2, 3, true, false, false)
+    then panic("missing generation published effect"); fi
+  if domain.may_publish_durable_effect(7, 7, 2, 4, true, false, false)
+    then panic("skipped effect sequence accepted"); fi
+  if domain.may_publish_durable_effect(7, 7, 2, 2, true, false, false)
+    then panic("duplicate effect sequence accepted"); fi
+  if domain.may_publish_durable_effect(7, 7, 2, 3, false, false, false)
+    then panic("uncommitted checkpoint published effect"); fi
+  if domain.may_publish_durable_effect(7, 7, 2, 3, true, true, false)
+    then panic("cancelled workflow published effect"); fi
+  if domain.may_publish_durable_effect(7, 7, 2, 3, true, false, true)
+    then panic("existing outbox entry republished"); fi
+  if domain.may_publish_durable_effect(7, 7, 9223372036854775807, 1, true, false, false)
+    then panic("overflow sequence admitted"); fi
   if pg.ident("x\";DROP TABLE runs;--") != "\"x\"\";DROP TABLE runs;--\"" then panic("identifier escape"); fi
   if !pg.column("x", "text; DROP TABLE runs", false).is_err() then panic("type injection"); fi
   val query = pg.find_in_workspace("runs", "hostile' OR true--", "id");
