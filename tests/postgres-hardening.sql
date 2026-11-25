@@ -1,4 +1,4 @@
--- Execute after applying 0001..0003, as the migration owner in a
+-- Execute after applying 0001..0004, as the migration owner in a
 -- disposable test database. The transaction rolls back fixtures at the end.
 BEGIN;
 INSERT INTO workspaces VALUES
@@ -123,7 +123,7 @@ $$;
 
 -- A run is pinned to its original graph/input, even when a second valid
 -- published version exists inside the same workspace.
-DO $
+DO $$
 BEGIN
   BEGIN
     UPDATE runs SET version_id='10000000-0000-4000-8000-000000000021'
@@ -133,9 +133,9 @@ BEGIN
     IF SQLERRM <> 'run identity and pinned input are immutable' THEN RAISE; END IF;
   END;
 END;
-$;
+$$;
 
-DO $
+DO $$
 BEGIN
   BEGIN
     UPDATE approvals SET run_id='10000000-0000-4000-8000-000000000031'
@@ -147,12 +147,12 @@ BEGIN
     IF SQLERRM NOT IN ('approval identity is immutable','approval decision is immutable') THEN RAISE; END IF;
   END;
 END;
-$;
+$$;
 
 -- A legitimately leased/completed job cannot be revived after completion.
 UPDATE jobs SET lease_owner='worker',lease_until=now() + interval '30 seconds',
   fence=1 WHERE id='10000000-0000-4000-8000-000000000051';
-DO $
+DO $$
 BEGIN
   BEGIN
     UPDATE jobs SET fence=0 WHERE id='10000000-0000-4000-8000-000000000051';
@@ -161,10 +161,10 @@ BEGIN
     IF SQLERRM <> 'job identity or fence cannot be changed backward' THEN RAISE; END IF;
   END;
 END;
-$;
+$$;
 UPDATE jobs SET done=true,lease_owner=NULL,lease_until=NULL
   WHERE id='10000000-0000-4000-8000-000000000051';
-DO $
+DO $$
 BEGIN
   BEGIN
     UPDATE jobs SET done=false WHERE id='10000000-0000-4000-8000-000000000051';
@@ -173,5 +173,5 @@ BEGIN
     IF SQLERRM <> 'completed job is immutable' THEN RAISE; END IF;
   END;
 END;
-$;
+$$;
 ROLLBACK;
