@@ -7,14 +7,16 @@ on:
       - 'migrations/**'
       - 'tests/postgres*.sql'
       - 'tooling/**'
+      - 'scripts/test-postgres.sh'
       - '.github/workflows/postgres-integrity.yml'
   push:
-    branches: [main]
+    branches: [main, feat/workflow-platform-foundation]
     paths:
       - 'contracts/worker.sql'
       - 'migrations/**'
       - 'tests/postgres*.sql'
       - 'tooling/**'
+      - 'scripts/test-postgres.sh'
       - '.github/workflows/postgres-integrity.yml'
 
 permissions:
