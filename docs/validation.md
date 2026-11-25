@@ -124,3 +124,7 @@ per-user RBAC, SSO/OAuth, CSRF, WebSocket session authorization, native DB
 driver, worker crash/reclaim, live connectors and production grants. No
 production-safe or completed platform claim is made. Keep this change draft;
 see `docs/tenant-authorization.md` for provisioning and threat boundaries.
+
+## Atto repository forward integration
+
+SQL source preflight is now a dependency-free Rust integration test (`tooling/tests/sql_source_preflight.rs`), replacing Python helpers. It detects malformed fixture delimiters and missing transaction boundaries, not SQL syntax or database behavior. Rust and PostgreSQL execution are still required; neither is claimed by this source-only change.

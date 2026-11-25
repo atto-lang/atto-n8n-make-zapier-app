@@ -2,8 +2,6 @@
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
-python3 -m unittest discover -s tests -p test_sql_source_preflight.py
-python3 scripts/check_sql_source.py
 cargo test --quiet --locked --manifest-path tooling/Cargo.toml
 actual="$(./scripts/ores tests/domain.ores)"
 [[ "$actual" == 'domain and pg contracts passed' ]]
