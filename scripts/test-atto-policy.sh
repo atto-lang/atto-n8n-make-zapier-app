@@ -13,7 +13,9 @@ trap 'rm -rf "$tmp"' EXIT
 # One canonical policy body: generate an isolated .atto module instead of
 # creating ambiguous .atto/.ores imports or changing the historical server pin.
 grep -qx 'define module domain as' "$root/src/domain.ores"
-sed 's/^define module domain as$/define pub module domain as/' "$root/src/domain.ores" > "$tmp/domain.atto"
+# Current Java main rejects module declaration modifiers (run 45546596236).
+# Keep the supported module spelling; public member visibility is unchanged.
+cp "$root/src/domain.ores" "$tmp/domain.atto"
 cp "$root/tests/atto/domain_policy.atto" "$tmp/main.atto"
 run_guest() {
   java --enable-native-access=ALL-UNNAMED -Dpolyglot.engine.WarnInterpreterOnly=false \
