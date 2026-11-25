@@ -91,3 +91,40 @@ Keep both the foundation PR and this stacked PR draft until the migrations and
 adversarial tests execute in PostgreSQL and the security model is reviewed.
 Private-source mirroring to another organization requires source-transfer
 authorization and approved destination, not merely available Actions minutes.
+
+## Tenant-authentication and runner-canary follow-up (2026-10-31)
+
+Stacked on draft PR #3, this change adds `0006_db_principal_scope.sql`,
+a restrictive database-login-identity RLS policy, a protected one-workspace-
+per-login ACL, and a narrowly scoped SECURITY DEFINER predicate. It updates
+the legacy RLS fixture to simulate authenticated `session_user`, adds
+`tests/postgres-tenant-auth.sql`, and wires it into local and CI Postgres
+test scripts. It also inserts a service-free, checkout-free runner-admission
+canary job alongside the service-backed PostgreSQL job.
+
+**Verification has not passed:** This follow-up has source-level verification
+only. No PostgreSQL instance or pinned native Oreslang compiler was available
+in the working environment; the local database suite could not run. The
+previous exact-head PR #3 workflow run 41168430552 (job 124440934350)
+reported failure with `steps=null`. Its job-log retrieval returned a
+missing archived blob; a zero-step result does not distinguish runner
+admission from PostgreSQL service startup failure on its own.
+
+Interpreting the new jobs:
+- If `runner_canary` has zero executed steps, classify as runner/admission
+  or policy before shell start. Do not attribute this to PostgreSQL code.
+- If `runner_canary` passes but `postgres` has zero steps, investigate
+  service-container admission/initialization before blaming SQL code.
+- If `postgres` executes SQL steps and fails, use the first failing step/log
+  to distinguish migration syntax, permission/grant, fixture, or application
+  bugs. Only exact-head completed executed checks count as evidence.
+
+**Not resolved:** Runtime user authentication, trusted tenant pool selection,
+per-user RBAC, SSO/OAuth, CSRF, WebSocket session authorization, native DB
+driver, worker crash/reclaim, live connectors and production grants. No
+production-safe or completed platform claim is made. Keep this change draft;
+see `docs/tenant-authorization.md` for provisioning and threat boundaries.
+
+## Atto repository forward integration
+
+SQL source preflight is now a dependency-free Rust integration test (`tooling/tests/sql_source_preflight.rs`), replacing Python helpers. It detects malformed fixture delimiters and missing transaction boundaries, not SQL syntax or database behavior. Rust and PostgreSQL execution are still required; neither is claimed by this source-only change.
