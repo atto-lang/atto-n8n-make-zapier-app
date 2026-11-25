@@ -36,10 +36,12 @@ Read [the research](docs/research.md), [architecture and delivery milestones](do
 
 ## Run locally
 
-Requires JDK 25, Maven, Rust/Cargo, Node 22.18+, npm, jq, and GitHub access for
-private pinned libraries. Build a **clean compiler checkout at the exact revision**
-in `dependencies.lock.json`. The sibling `../oreslang-source.java` is the default;
-set `ORESLANG_SOURCE_DIR` to use another checkout.
+Requires JDK 25, Maven, Rust/Cargo, Node 22.18+, npm, jq, and public GitHub access for
+pinned libraries. Build a **clean compiler checkout at the exact revision and tree**
+in `dependencies.lock.json`. The sibling `../atto-source.java` is the default;
+set `ATTO_COMPILER_DIR` (or historical `ORESLANG_SOURCE_DIR`) to use another checkout.
+Historical pins are now resolved from their verified public Atto repository locations;
+this intentionally does not claim current-compiler syntax admission.
 
 ```sh
 # In that compiler checkout:

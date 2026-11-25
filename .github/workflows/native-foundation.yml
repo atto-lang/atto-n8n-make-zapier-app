@@ -1,0 +1,64 @@
+name: Native foundation exact-pin contracts
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'tooling/**'
+      - 'generated/**'
+      - 'contracts/**'
+      - 'dependencies.lock.json'
+      - '.github/workflows/native-foundation.yml'
+  push:
+    branches: [main, feat/workflow-platform-foundation]
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'tooling/**'
+      - 'generated/**'
+      - 'contracts/**'
+      - 'dependencies.lock.json'
+      - '.github/workflows/native-foundation.yml'
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.18.0'
+      - name: Build exact historical compiler from public Atto repository
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          echo "APP_HEAD=$EXPECTED_HEAD APP_TREE=$(git rev-parse 'HEAD^{tree}')"
+          repo="$(jq -er '.compiler.repository' dependencies.lock.json)"
+          sha="$(jq -er '.compiler.commit' dependencies.lock.json)"
+          tree="$(jq -er '.compiler.tree' dependencies.lock.json)"
+          git clone --no-checkout "https://github.com/$repo.git" "$RUNNER_TEMP/atto-foundation"
+          git -C "$RUNNER_TEMP/atto-foundation" fetch --no-tags origin "$sha"
+          git -C "$RUNNER_TEMP/atto-foundation" checkout --detach "$sha"
+          test "$(git -C "$RUNNER_TEMP/atto-foundation" rev-parse HEAD)" = "$sha"
+          test "$(git -C "$RUNNER_TEMP/atto-foundation" rev-parse 'HEAD^{tree}')" = "$tree"
+          cd "$RUNNER_TEMP/atto-foundation"
+          mvn -B -ntp -DskipTests package dependency:build-classpath -Dmdep.outputFile=target/classpath.txt
+      - name: Execute native domain, schema, contract generation and HTTP smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          export ATTO_COMPILER_DIR="$RUNNER_TEMP/atto-foundation"
+          ./scripts/bootstrap.sh
+          ./scripts/test.sh
