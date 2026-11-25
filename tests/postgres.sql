@@ -33,9 +33,11 @@ DO $$ BEGIN
   UPDATE runs SET status='running',finished_at=NULL;
   RAISE EXCEPTION 'test failed: reopened terminal run';
  EXCEPTION WHEN raise_exception THEN
-  IF SQLERRM NOT LIKE 'invalid run transition:%' THEN RAISE; END IF;
+  -- Migration 0005 adds an earlier terminal immutability guard; do not
+  -- mistake the new correct rejection for a failed SQL assertion.
+  IF SQLERRM NOT IN ('terminal run is immutable', 'invalid run transition: succeeded -> running') THEN RAISE; END IF;
  END;
-END $$;
+END $;
 CREATE ROLE ores_test_client NOLOGIN NOSUPERUSER NOBYPASSRLS;
 GRANT SELECT, INSERT ON workflows TO ores_test_client;
 SET LOCAL ROLE ores_test_client;
