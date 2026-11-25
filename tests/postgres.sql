@@ -33,12 +33,19 @@ DO $$ BEGIN
   UPDATE runs SET status='running',finished_at=NULL;
   RAISE EXCEPTION 'test failed: reopened terminal run';
  EXCEPTION WHEN raise_exception THEN
-  IF SQLERRM NOT LIKE 'invalid run transition:%' THEN RAISE; END IF;
+  -- Migration 0005 adds an earlier terminal immutability guard; do not
+  -- mistake the new correct rejection for a failed SQL assertion.
+  IF SQLERRM NOT IN ('terminal run is immutable', 'invalid run transition: succeeded -> running') THEN RAISE; END IF;
  END;
 END $$;
 CREATE ROLE ores_test_client NOLOGIN NOSUPERUSER NOBYPASSRLS;
+INSERT INTO ores_db_principal_workspaces (db_principal, workspace_id) VALUES
+ ('ores_test_client', '00000000-0000-4000-8000-000000000001');
+GRANT EXECUTE ON FUNCTION ores_db_principal_authorized(uuid) TO ores_test_client;
 GRANT SELECT, INSERT ON workflows TO ores_test_client;
-SET LOCAL ROLE ores_test_client;
+-- Tests deliberately change the authenticated session identity as a superuser.
+-- SET ROLE alone would retain session_user=postgres and cannot test the fence.
+SET SESSION AUTHORIZATION ores_test_client;
 DO $$ BEGIN
  IF EXISTS (SELECT 1 FROM workflows) THEN RAISE EXCEPTION 'missing workspace leaked rows'; END IF;
 END $$;
@@ -54,5 +61,5 @@ SELECT set_config('app.workspace_id','00000000-0000-4000-8000-000000000001',true
 DO $$ BEGIN
  IF (SELECT count(*) FROM workflows) <> 1 THEN RAISE EXCEPTION 'authorized workspace missing row'; END IF;
 END $$;
-RESET ROLE;
+RESET SESSION AUTHORIZATION;
 ROLLBACK;

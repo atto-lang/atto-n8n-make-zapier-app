@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
+python3 -m unittest discover -s "$root/tests" -p test_sql_source_preflight.py
+python3 "$root/scripts/check_sql_source.py"
 pg_bin="${PG_BIN:-/opt/homebrew/opt/postgresql@17/bin}"
 tmp="$(mktemp -d /tmp/ores-workflows-pg.XXXXXX)"
 cleanup() { "$pg_bin/pg_ctl" -D "$tmp/data" -m immediate stop >/dev/null 2>&1 || true; rm -rf "$tmp"; }
@@ -13,6 +15,8 @@ export PGHOST="$tmp/socket" PGPORT=55443 PGDATABASE=postgres
 "$root/scripts/tool" apply
 psql -X --set=ON_ERROR_STOP=1 --quiet -f "$root/tests/postgres.sql"
 psql -X --set=ON_ERROR_STOP=1 --quiet -f "$root/tests/postgres-hardening.sql"
+psql -X --set=ON_ERROR_STOP=1 --quiet -f "$root/tests/postgres-durable.sql"
+psql -X --set=ON_ERROR_STOP=1 --quiet -f "$root/tests/postgres-tenant-auth.sql"
 # Reject ledger tampering; the runner must fail before attempting any DDL.
 psql -X --set=ON_ERROR_STOP=1 --quiet -c "UPDATE _ores_migrations SET sha256 = repeat('0',64) WHERE name='0001_initial.sql'"
 if "$root/scripts/tool" apply > "$tmp/rejection.log" 2>&1; then

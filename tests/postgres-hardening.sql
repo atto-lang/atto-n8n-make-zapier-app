@@ -1,4 +1,4 @@
--- Execute after applying 0001..0004, as the migration owner in a
+-- Execute after applying 0001..0005, as the migration owner in a
 -- disposable test database. The transaction rolls back fixtures at the end.
 BEGIN;
 INSERT INTO workspaces VALUES
