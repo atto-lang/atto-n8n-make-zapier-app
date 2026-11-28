@@ -1,0 +1,35 @@
+// Current Atto syntax admission for the pure workflow policy. No database or connector effects.
+import module domain from "./domain.atto";
+
+fnc check(bool actual, bool expected): int {
+  if actual eq expected then return 1; fi
+  return 0;
+}
+
+pub fnc main(): void {
+  val int generation = 7;
+  val int active_generation = copy! generation;
+  let int passed = 0;
+  passed = passed + check(domain.may_transition("queued", "running"), true);
+  passed = passed + check(domain.may_transition("succeeded", "running"), false);
+  passed = passed + check(domain.may_transition("waiting", "succeeded"), false);
+  passed = passed + check(domain.retry_delay_ms(3, 100, 1000).unwrap() eq 400, true);
+  passed = passed + check(domain.retry_delay_ms(32, 100, 1000).unwrap() eq 1000, true);
+  passed = passed + check(domain.retry_delay_ms(0, 100, 1000).is_err(), true);
+  passed = passed + check(domain.executable_kind("approval"), true);
+  passed = passed + check(domain.executable_kind("unknown"), false);
+  passed = passed + check(domain.may_publish_durable_effect(active_generation, generation, 2, 3, true, false, false), true);
+  passed = passed + check(domain.may_publish_durable_effect(7, 6, 2, 3, true, false, false), false);
+  passed = passed + check(domain.may_publish_durable_effect(0, 0, 2, 3, true, false, false), false);
+  passed = passed + check(domain.may_publish_durable_effect(7, 7, 2, 4, true, false, false), false);
+  passed = passed + check(domain.may_publish_durable_effect(7, 7, 2, 2, true, false, false), false);
+  passed = passed + check(domain.may_publish_durable_effect(7, 7, 2, 3, false, false, false), false);
+  passed = passed + check(domain.may_publish_durable_effect(7, 7, 2, 3, true, true, false), false);
+  passed = passed + check(domain.may_publish_durable_effect(7, 7, 2, 3, true, false, true), false);
+  passed = passed + check(domain.may_publish_durable_effect(7, 7, 9223372036854775807, 1, true, false, false), false);
+  passed = passed + check(domain.may_publish_durable_effect(7, 7, 0, 1, true, false, false), true);
+  passed = passed + check(domain.may_publish_durable_effect(7, 7, -1, 1, true, false, false), false);
+  passed = passed + check(domain.may_publish_durable_effect(7, 7, 9223372036854775806, 9223372036854775807, true, false, false), true);
+  stdio.stdout.println(passed);
+  return;
+}

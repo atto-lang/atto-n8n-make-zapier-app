@@ -19,6 +19,21 @@ define module domain as
     }
     return Ok(delay);
   }
+  // Pure admission predicate for serializable durable effect commands.
+  // Only a worker that has independently authenticated the lease, committed
+  // the checkpoint, and proved absence in its transactional outbox may use
+  // this decision. This is not itself an atomic DB write or replay executor.
+  pub fnc may_publish_durable_effect(
+    int run_generation, int lease_generation,
+    int committed_sequence, int next_sequence,
+    bool checkpoint_durable, bool cancelled, bool already_enqueued
+  ): bool {
+    if run_generation <= 0 || run_generation != lease_generation then return false; fi
+    if committed_sequence < 0 || committed_sequence >= 9223372036854775807 then return false; fi
+    if next_sequence <= 0 || next_sequence != committed_sequence + 1 then return false; fi
+    if !checkpoint_durable || cancelled || already_enqueued then return false; fi
+    return true;
+  }
   pub fnc executable_kind(string kind): bool {
     return kind == "manual" || kind == "transform" || kind == "approval";
   }
