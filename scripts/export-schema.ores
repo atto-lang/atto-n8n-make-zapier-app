@@ -1,0 +1,2 @@
+import module models from '../src/models';
+pub routine main(): void { stdio.println(models.schema()); return; }

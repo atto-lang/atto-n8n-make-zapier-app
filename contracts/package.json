@@ -1,0 +1,13 @@
+{
+  "name": "ores-workflow-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "compile": "tsp compile main.tsp --emit @typespec/json-schema --output-dir ../.work/typespec --option @typespec/json-schema.file-type=json"
+  },
+  "devDependencies": {
+    "@typespec/compiler": "1.17.0",
+    "@typespec/json-schema": "1.17.0"
+  }
+}

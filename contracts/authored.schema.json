@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ores-workflows",
+  "$defs": {
+    "BoundedId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "$id": "BoundedId.json"
+    },
+    "Uuid": {
+      "type": "string",
+      "format": "uuid",
+      "$id": "Uuid.json"
+    },
+    "PositiveRevision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647,
+      "$id": "PositiveRevision.json"
+    },
+    "RunStatus": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "waiting",
+        "succeeded",
+        "failed",
+        "cancelled"
+      ],
+      "$id": "RunStatus.json"
+    },
+    "RunRequest": {
+      "type": "object",
+      "properties": {
+        "workflowId": {
+          "$ref": "Uuid.json"
+        },
+        "versionId": {
+          "$ref": "Uuid.json"
+        },
+        "idempotencyKey": {
+          "$ref": "BoundedId.json"
+        },
+        "inputJson": {
+          "$ref": "PayloadJson.json"
+        }
+      },
+      "required": [
+        "workflowId",
+        "versionId",
+        "idempotencyKey",
+        "inputJson"
+      ],
+      "$id": "RunRequest.json",
+      "additionalProperties": false
+    },
+    "RunView": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "Uuid.json"
+        },
+        "workflowId": {
+          "$ref": "Uuid.json"
+        },
+        "versionId": {
+          "$ref": "Uuid.json"
+        },
+        "status": {
+          "$ref": "RunStatus.json"
+        }
+      },
+      "required": [
+        "id",
+        "workflowId",
+        "versionId",
+        "status"
+      ],
+      "$id": "RunView.json",
+      "additionalProperties": false
+    },
+    "ApprovalDecision": {
+      "type": "object",
+      "properties": {
+        "approvalId": {
+          "$ref": "Uuid.json"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "approved",
+            "rejected"
+          ]
+        },
+        "expectedRevision": {
+          "$ref": "PositiveRevision.json"
+        }
+      },
+      "required": [
+        "approvalId",
+        "decision",
+        "expectedRevision"
+      ],
+      "$id": "ApprovalDecision.json",
+      "additionalProperties": false
+    },
+    "SubscribeRun": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "$ref": "Uuid.json"
+        },
+        "afterSequence": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,18})$"
+        }
+      },
+      "required": [
+        "runId",
+        "afterSequence"
+      ],
+      "$id": "SubscribeRun.json",
+      "additionalProperties": false
+    },
+    "PayloadJson": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 65536,
+      "$id": "PayloadJson.json"
+    }
+  }
+}

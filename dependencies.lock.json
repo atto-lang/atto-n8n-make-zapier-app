@@ -1,0 +1,37 @@
+{
+  "spin": {
+    "repository": "atto-lang/atto-spin",
+    "commit": "87d8123aa22febc3b3ee469a479242941064250c",
+    "tree": "44c2c28a241742ce66e1429e5f870b9b424af1f0"
+  },
+  "ssr": {
+    "repository": "atto-lang/atto-ssr",
+    "commit": "b87a9932a15ac65421cb55b0eb37b20fbad98480",
+    "tree": "26a3bb5504622c8b2e9fe8eecdd302cf62a93aff"
+  },
+  "http-routing": {
+    "repository": "atto-lang/atto-http-routing",
+    "commit": "6c5413221d29f790b691ab9c1ad17b3160aeac9d",
+    "tree": "b8856690cac4393e9e36b7d0770c175cfa6185ac"
+  },
+  "compiler": {
+    "repository": "atto-lang/atto-source.java",
+    "commit": "87a52fa7af40d3541277764533f51850b4db22bd",
+    "tree": "e66c0ed134386a1b8bcbc525ccce9dab1aa5b91b"
+  },
+  "api-docs": {
+    "repository": "oresoftware/api-docs",
+    "commit": "02b566611cca3d9e67bfada9c24df8d2da981cd3",
+    "tree": "8c8a82233b1706546c71a2447819f5c821ca9c91"
+  },
+  "pg": {
+    "repository": "atto-lang/atto-postgres-orm.atto",
+    "commit": "337fc5632db40649d529533f975c634a5e69bd51",
+    "tree": "e04e153f43bf959c890108c3df43ad73fe680919"
+  },
+  "tjsv": {
+    "repository": "ORESoftware/typespec-json-schema-validator",
+    "commit": "2d3b187aec68477cff579f2f3a9275ea5ef62f88",
+    "tree": "1c759a901079db4cf60b170052197b59ae105e28"
+  }
+}

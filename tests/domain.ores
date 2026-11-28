@@ -1,0 +1,17 @@
+import module domain from '../src/domain';
+import module pg from '../dependencies/pg/src/pg';
+pub routine main(): void {
+  if !domain.may_transition("queued", "running") then panic("queued must start"); fi
+  if domain.may_transition("succeeded", "running") then panic("terminal state reopened"); fi
+  if domain.may_transition("waiting", "succeeded") then panic("waiting skipped resume"); fi
+  if domain.retry_delay_ms(3, 100, 1000).unwrap() != 400 then panic("backoff"); fi
+  if domain.retry_delay_ms(32, 100, 1000).unwrap() != 1000 then panic("cap"); fi
+  if !domain.retry_delay_ms(0, 100, 1000).is_err() then panic("bad attempt"); fi
+  if pg.ident("x\";DROP TABLE runs;--") != "\"x\"\";DROP TABLE runs;--\"" then panic("identifier escape"); fi
+  if !pg.column("x", "text; DROP TABLE runs", false).is_err() then panic("type injection"); fi
+  val query = pg.find_in_workspace("runs", "hostile' OR true--", "id");
+  if query.params.get(0) != "hostile' OR true--" then panic("bound params"); fi
+  if query.sql != "SELECT * FROM \"runs\" WHERE workspace_id = $1::uuid AND id = $2::uuid" then panic("query SQL"); fi
+  stdio.println("domain and pg contracts passed");
+  return;
+}

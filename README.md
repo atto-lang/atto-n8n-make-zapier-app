@@ -10,7 +10,7 @@
 
 Preserve legacy `.ores` paths, CLI/package/ABI names and wire formats where implemented. No Python support scripts, CI or tests; prefer Rust helper tooling. Document exact compiler SHA/tree, toolchain, executed guest positive/negative checks and unsupported/failed/not-executed outcomes. Host-only or zero-step CI cannot certify feature or backend parity.
 
-Native Oreslang workflow automation development. Research and the initial tested foundation are proposed separately for review.
+Native workflow automation development foundation. Historical validation is described below; the current Atto compiler and PostgreSQL execution must be verified separately.
 
 ## Repository ownership and migration
 
@@ -19,3 +19,75 @@ Native Oreslang workflow automation development. Research and the initial tested
 - **Organization boundary:** [atto-lang](https://github.com/atto-lang) hosts portable language semantics, compiler targets, standard libraries, SDKs, tooling, conformance and examples. [atto-co](https://github.com/atto-co) separately owns managed cloud deployment, identity, billing, tenant hosting, registries and commercial services. A pre-existing similarly named `atto-*` repo is not assumed to be a transferred copy of this Git repository.
 
 The historical transfer proposal is not an instruction to move this repository again. Any future transfer or managed-product carve-out needs separate owner authorization, exact source and destination identity verification, security and consumer review, and a rollback owner. Inventory repository ID, SHA/tree, PRs/releases, rulesets, runner settings, secrets metadata, webhooks, GitHub Apps, packages, Pages and consumer URLs; verify destination controls and executed exact-head tests after an authorized move. Never mirror private source without authorization and approved destination. Zero-step or host-only checks are not guest execution or production-safety evidence.
+
+## Development foundation
+
+An Oreslang foundation for repeatable workflow automation inspired by n8n,
+Make, Zapier, and Cortex. Native Spin/http-routing serves an oreslang-ssr
+interface with self-hosted HTMX. Native model code compiles to PostgreSQL DDL.
+
+**Status: development foundation, not a completed automation platform. Historical tests do not establish current-head validation.**
+The UI previews a fixed illustrative flow. It does not persist or execute a
+workflow. `/ws` returns 501. Native PG transport, Zorde binding, durable workers,
+authentication, and per-session WebSocket actors remain required.
+
+Read [the research](docs/research.md), [architecture and delivery milestones](docs/architecture.md),
+[entity inventory](docs/entities.md), and [requirement status](docs/requirements.md).
+
+## Run locally
+
+Requires JDK 25, Maven, Rust/Cargo, Node 22.18+, npm, jq, and public GitHub access for
+pinned libraries. Build a **clean compiler checkout at the exact revision and tree**
+in `dependencies.lock.json`. The sibling `../atto-source.java` is the default;
+set `ATTO_COMPILER_DIR` (or historical `ORESLANG_SOURCE_DIR`) to use another checkout.
+Historical pins are now resolved from their verified public Atto repository locations;
+this intentionally does not claim current-compiler syntax admission.
+
+```sh
+# In that compiler checkout:
+mvn -q -DskipTests package dependency:build-classpath -Dmdep.outputFile=target/classpath.txt
+# Back in this app:
+./scripts/bootstrap.sh
+./scripts/ores --platform=server --allow-net=127.0.0.1:8080 src/main.ores
+```
+
+Open [the development UI](http://127.0.0.1:8080). There is no React, browser app
+framework, client-side workflow engine, runtime CDN, or production DB credential
+in this repository.
+
+## Verify
+
+```sh
+./scripts/test.sh
+# Requires PostgreSQL 17 tools; creates and deletes its own temporary DB cluster:
+PG_BIN=/path/to/postgresql/bin ./scripts/test-postgres.sh
+```
+
+`test.sh` checks native contracts, Rust migration tooling, native model/schema
+snapshot parity, TypeSpec/JSON Schema parity, WIT syntax, and generated docs/
+route/assets drift. It does not claim to test missing features. Native compiler
+`--check` currently can print errors with exit status zero; tests also execute
+the native contracts, and the HTTP smoke test verifies server startup.
+
+## Migrate an explicitly selected development database
+
+```sh
+./scripts/tool check-models
+./scripts/tool plan add_new_tables
+PGHOST=/path/to/socket PGDATABASE=workflow_dev ./scripts/tool apply
+```
+
+New-table plans are candidates for review. Existing-table changes require
+explicit SQL and a reviewed snapshot update. The migration runner checks
+checksums and serializes apply with an advisory lock inside one transaction.
+Never edit an applied migration. See architecture notes for forward repair,
+backfill, and online migration limitations.
+
+`contracts/live.route-map.json` owns implemented operation paths. Rust tooling
+generates native Spin registration; api-docs emits the digest-bound docs/client
+bundle in `generated/api`. `contracts/main.tsp` and `contracts/authored.schema.json`
+are independent I/O peers checked with pinned TJSV. The WIT interface describes
+a future worker boundary and is syntax-checked, not a deployed component.
+
+[The ORM development PR](https://github.com/ores-truffle-oreslang/postgres-orm.ores/pull/1)
+is pinned by commit, so its merge is not required to reproduce this snapshot.

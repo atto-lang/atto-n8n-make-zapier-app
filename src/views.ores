@@ -1,0 +1,36 @@
+import module markup from '../dependencies/ssr/src/markup';
+import module html from '../dependencies/ssr/src/html';
+import module htmx from '../dependencies/ssr/src/htmx';
+
+define module views as
+  pub fnc preview(string status): string {
+    val card = html.section(html.id("run-preview"), html.fragment(arr[
+      html.h2(html.attrs_empty(), markup.text("Execution preview")),
+      html.p(html.attrs_empty(), markup.text(status)),
+      html.p(html.attrs_empty(), markup.text("Manual trigger → transform → approval. Preview only; no durable job has been submitted."))
+    ]));
+    return markup.render(card);
+  }
+  pub fnc page(): string {
+    val head = html.fragment(arr[
+      html.title(html.attrs_empty(), markup.text("Ores Workflows")),
+      html.meta(html.attrs_join(arr[html.attr_trusted("name", "viewport"), html.attr_trusted("content", "width=device-width,initial-scale=1")])),
+      html.link(html.attrs_join(arr[html.attr_trusted("rel", "stylesheet"), html.attr_trusted("href", "/static/app.css")])),
+      html.script_trusted(html.attrs_join(arr[html.attr_trusted("src", "/static/htmx.min.js"), html.bool_attr_trusted("defer", true)]), "")
+    ]);
+    val body = html.main(html.class_name("workspace"), html.fragment(arr[
+      html.nav(html.attrs_empty(), markup.text("ORES / WORKFLOWS")),
+      html.h1(html.attrs_empty(), markup.text("Repeat the work. Keep the judgment.")),
+      html.p(html.attrs_empty(), markup.text("Native Oreslang · Spin · server-rendered HTML · Postgres model foundation")),
+      html.section(html.class_name("pipeline"), html.fragment(arr[
+        html.div(html.attrs_empty(), markup.text("01  Manual trigger")),
+        html.div(html.attrs_empty(), markup.text("02  Transform data")),
+        html.div(html.attrs_empty(), markup.text("03  Human approval"))
+      ])),
+      html.button(html.attrs_join(arr[htmx.post_trusted("/preview"), htmx.target_trusted("#run-preview"), htmx.outer_html()]), markup.text("Preview execution")),
+      markup.trusted_raw(preview("Ready to preview")),
+      html.p(html.class_name("notice"), markup.text("Development foundation. Durable execution, authentication, Zorde, and session WebSocket transport are not enabled."))
+    ]));
+    return markup.render(html.document(head, body));
+  }
+end

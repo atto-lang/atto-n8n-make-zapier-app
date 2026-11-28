@@ -1,0 +1,82 @@
+name: PostgreSQL integrity contracts
+
+on:
+  pull_request:
+    paths:
+      - 'contracts/worker.sql'
+      - 'migrations/**'
+      - 'tests/postgres*.sql'
+      - 'tooling/**'
+      - 'scripts/test-postgres.sh'
+      - '.github/workflows/postgres-integrity.yml'
+  push:
+    branches: [main, feat/workflow-platform-foundation, audit/workflow-durable-invariants-20261030, audit/tenant-principal-authorization-20261031]
+    paths:
+      - 'contracts/worker.sql'
+      - 'migrations/**'
+      - 'tests/postgres*.sql'
+      - 'tooling/**'
+      - 'scripts/test-postgres.sh'
+      - '.github/workflows/postgres-integrity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  # Deliberately no checkout, private-source access, services, or secrets.
+  # This distinguishes runner/admission failure from PostgreSQL service setup.
+  runner_canary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Prove runner admitted a shell step
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'runner-admitted sha=%s run=%s\\n' "$GITHUB_SHA" "$GITHUB_RUN_ID"
+
+  postgres:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ores_workflows_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ores_workflows_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: ores_workflows_test
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Rust migration-tool contracts and SQL source preflight
+        run: cargo test --locked --manifest-path tooling/Cargo.toml
+      - name: Apply and reapply numbered migrations
+        run: |
+          cargo run --locked --manifest-path tooling/Cargo.toml -- apply
+          cargo run --locked --manifest-path tooling/Cargo.toml -- apply
+      - name: Existing tenancy and migration invariants
+        run: psql -X --set=ON_ERROR_STOP=1 -f tests/postgres.sql
+      - name: Cross-run, append-only and approval invariants
+        run: psql -X --set=ON_ERROR_STOP=1 -f tests/postgres-hardening.sql
+      - name: Durable run and deduplication invariants
+        run: psql -X --set=ON_ERROR_STOP=1 -f tests/postgres-durable.sql
+      - name: Untrusted authenticated tenant SQL regression
+        run: psql -X --set=ON_ERROR_STOP=1 -f tests/postgres-tenant-auth.sql
+      - name: Fail closed on migration checksum tampering
+        shell: bash
+        run: |
+          psql -X --set=ON_ERROR_STOP=1 -c "UPDATE _ores_migrations SET sha256 = repeat('0',64) WHERE name = '0001_initial.sql'"
+          if cargo run --locked --manifest-path tooling/Cargo.toml -- apply > tamper.log 2>&1; then
+            echo 'Tampered migration was accepted' >&2
+            exit 1
+          fi
+          grep -q 'Migration checksum mismatch' tamper.log

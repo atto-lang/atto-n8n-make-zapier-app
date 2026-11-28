@@ -1,0 +1,361 @@
+{
+  "authorities": {
+    "jsonSchema": {
+      "authority": "independently-authored",
+      "dialect": "https://json-schema.org/draft/2020-12/schema"
+    },
+    "onUnexplainedMismatch": "STOPPED_FOR_EVALUATION",
+    "precedence": "none",
+    "typespec": {
+      "authority": "independently-authored",
+      "generatedJsonSchemaRole": "comparison-evidence-only"
+    }
+  },
+  "configuration": {
+    "bundleId": "typespec.generated.schema.json",
+    "differential": {
+      "enabled": true,
+      "formatAssertion": true,
+      "instanceCorpus": "contracts/instances",
+      "instanceCorpusDigest": "2dbba263f8fc7d304e45171f2fba0467f232e85c56c75a26084427557bd9dad5",
+      "maxProbesPerDeclarationPerLane": 64
+    },
+    "emitter": "@typespec/json-schema",
+    "emitterOptions": {
+      "bundleId": "typespec.generated.schema.json",
+      "emitAllModels": "true",
+      "emitAllRefs": "true",
+      "emitter-output-dir": "/Users/alexandermills/codes/ores-truffle-oreslang/oreslang-n8n-make-zapier-app/.typespec-json-schema-validator/generated",
+      "file-type": "json",
+      "int64-strategy": "string",
+      "polymorphic-models-strategy": "oneOf",
+      "seal-object-schemas": "true"
+    },
+    "executionMode": "subprocess",
+    "mappingDigest": "b7fc55105cbebab513e9b1b6c0480039574f48624a342fc1bafc00ae22cc94a4",
+    "mappingSchema": "ores.typespec-json-schema-validator.mapping/v1",
+    "maxFindings": 250,
+    "mode": "check"
+  },
+  "counts": {
+    "authoredDeclarations": 9,
+    "differentialFindings": 0,
+    "emittedFindings": 0,
+    "findings": 0,
+    "findingsTruncated": false,
+    "generatedDeclarations": 9,
+    "structuralFindings": 0,
+    "typespecDeclarations": 9,
+    "typespecOutOfScopeDeclarations": 0
+  },
+  "coverage": {
+    "comparedDimensions": [
+      "top-level declaration names",
+      "declaration kind families",
+      "required and optional properties",
+      "nullability",
+      "scalar types and formats",
+      "numeric and string constraints",
+      "enums",
+      "unions and composition",
+      "references",
+      "defaults and annotations",
+      "additional and unevaluated property policy",
+      "instance-level verdict agreement over a synthesized probe corpus"
+    ],
+    "differentialInstanceValidation": true,
+    "directDeclarationInventory": true,
+    "outOfScopeTypeSpecDeclarations": [],
+    "sourceMutationCheck": true,
+    "typespecGeneratedJsonSchemaComparison": true
+  },
+  "declarationMap": [
+    {
+      "authored": "ApprovalDecision",
+      "generated": "ApprovalDecision",
+      "kind": "model",
+      "typespec": "Ores.Workflows.ApprovalDecision"
+    },
+    {
+      "authored": "BoundedId",
+      "generated": "BoundedId",
+      "kind": "scalar",
+      "typespec": "Ores.Workflows.BoundedId"
+    },
+    {
+      "authored": "PayloadJson",
+      "generated": "PayloadJson",
+      "kind": "scalar",
+      "typespec": "Ores.Workflows.PayloadJson"
+    },
+    {
+      "authored": "PositiveRevision",
+      "generated": "PositiveRevision",
+      "kind": "scalar",
+      "typespec": "Ores.Workflows.PositiveRevision"
+    },
+    {
+      "authored": "RunRequest",
+      "generated": "RunRequest",
+      "kind": "model",
+      "typespec": "Ores.Workflows.RunRequest"
+    },
+    {
+      "authored": "RunStatus",
+      "generated": "RunStatus",
+      "kind": "enum",
+      "typespec": "Ores.Workflows.RunStatus"
+    },
+    {
+      "authored": "RunView",
+      "generated": "RunView",
+      "kind": "model",
+      "typespec": "Ores.Workflows.RunView"
+    },
+    {
+      "authored": "SubscribeRun",
+      "generated": "SubscribeRun",
+      "kind": "model",
+      "typespec": "Ores.Workflows.SubscribeRun"
+    },
+    {
+      "authored": "Uuid",
+      "generated": "Uuid",
+      "kind": "scalar",
+      "typespec": "Ores.Workflows.Uuid"
+    }
+  ],
+  "differential": {
+    "declarations": [
+      {
+        "authored": "ApprovalDecision",
+        "behaviorallyIndistinguishable": true,
+        "declaredExamples": 0,
+        "divergences": 0,
+        "generated": "ApprovalDecision",
+        "probes": 33,
+        "refusals": 0,
+        "reviewedCorpus": {
+          "accepted": 0,
+          "rejected": 0,
+          "total": 0,
+          "unasserted": 0
+        },
+        "reviewedFixtureCoverage": "none",
+        "syntheticProbes": 33,
+        "typespec": "Ores.Workflows.ApprovalDecision"
+      },
+      {
+        "authored": "BoundedId",
+        "behaviorallyIndistinguishable": true,
+        "declaredExamples": 0,
+        "divergences": 0,
+        "generated": "BoundedId",
+        "probes": 10,
+        "refusals": 0,
+        "reviewedCorpus": {
+          "accepted": 0,
+          "rejected": 0,
+          "total": 0,
+          "unasserted": 0
+        },
+        "reviewedFixtureCoverage": "none",
+        "syntheticProbes": 10,
+        "typespec": "Ores.Workflows.BoundedId"
+      },
+      {
+        "authored": "PayloadJson",
+        "behaviorallyIndistinguishable": true,
+        "declaredExamples": 0,
+        "divergences": 0,
+        "generated": "PayloadJson",
+        "probes": 10,
+        "refusals": 0,
+        "reviewedCorpus": {
+          "accepted": 0,
+          "rejected": 0,
+          "total": 0,
+          "unasserted": 0
+        },
+        "reviewedFixtureCoverage": "none",
+        "syntheticProbes": 10,
+        "typespec": "Ores.Workflows.PayloadJson"
+      },
+      {
+        "authored": "PositiveRevision",
+        "behaviorallyIndistinguishable": true,
+        "declaredExamples": 0,
+        "divergences": 0,
+        "generated": "PositiveRevision",
+        "probes": 10,
+        "refusals": 0,
+        "reviewedCorpus": {
+          "accepted": 0,
+          "rejected": 0,
+          "total": 0,
+          "unasserted": 0
+        },
+        "reviewedFixtureCoverage": "none",
+        "syntheticProbes": 10,
+        "typespec": "Ores.Workflows.PositiveRevision"
+      },
+      {
+        "authored": "RunRequest",
+        "behaviorallyIndistinguishable": true,
+        "declaredExamples": 0,
+        "divergences": 0,
+        "generated": "RunRequest",
+        "probes": 35,
+        "refusals": 0,
+        "reviewedCorpus": {
+          "accepted": 1,
+          "rejected": 2,
+          "total": 3,
+          "unasserted": 0
+        },
+        "reviewedFixtureCoverage": "positive-and-negative",
+        "syntheticProbes": 32,
+        "typespec": "Ores.Workflows.RunRequest"
+      },
+      {
+        "authored": "RunStatus",
+        "behaviorallyIndistinguishable": true,
+        "declaredExamples": 0,
+        "divergences": 0,
+        "generated": "RunStatus",
+        "probes": 15,
+        "refusals": 0,
+        "reviewedCorpus": {
+          "accepted": 0,
+          "rejected": 0,
+          "total": 0,
+          "unasserted": 0
+        },
+        "reviewedFixtureCoverage": "none",
+        "syntheticProbes": 15,
+        "typespec": "Ores.Workflows.RunStatus"
+      },
+      {
+        "authored": "RunView",
+        "behaviorallyIndistinguishable": true,
+        "declaredExamples": 0,
+        "divergences": 0,
+        "generated": "RunView",
+        "probes": 35,
+        "refusals": 0,
+        "reviewedCorpus": {
+          "accepted": 0,
+          "rejected": 0,
+          "total": 0,
+          "unasserted": 0
+        },
+        "reviewedFixtureCoverage": "none",
+        "syntheticProbes": 35,
+        "typespec": "Ores.Workflows.RunView"
+      },
+      {
+        "authored": "SubscribeRun",
+        "behaviorallyIndistinguishable": true,
+        "declaredExamples": 0,
+        "divergences": 0,
+        "generated": "SubscribeRun",
+        "probes": 31,
+        "refusals": 0,
+        "reviewedCorpus": {
+          "accepted": 0,
+          "rejected": 0,
+          "total": 0,
+          "unasserted": 0
+        },
+        "reviewedFixtureCoverage": "none",
+        "syntheticProbes": 31,
+        "typespec": "Ores.Workflows.SubscribeRun"
+      },
+      {
+        "authored": "Uuid",
+        "behaviorallyIndistinguishable": true,
+        "declaredExamples": 0,
+        "divergences": 0,
+        "generated": "Uuid",
+        "probes": 10,
+        "refusals": 0,
+        "reviewedCorpus": {
+          "accepted": 0,
+          "rejected": 0,
+          "total": 0,
+          "unasserted": 0
+        },
+        "reviewedFixtureCoverage": "none",
+        "syntheticProbes": 10,
+        "typespec": "Ores.Workflows.Uuid"
+      }
+    ],
+    "summary": {
+      "agreements": 189,
+      "behaviorallyIndistinguishableDeclarations": 9,
+      "comparedDeclarations": 9,
+      "corpusInstances": 3,
+      "declarationsWithReviewedPositiveAndNegative": 1,
+      "declarationsWithoutReviewedFixtures": 8,
+      "divergences": 0,
+      "formatAssertion": true,
+      "matchedReviewedCorpusInstances": 3,
+      "maxProbesPerDeclarationPerLane": 64,
+      "probesEvaluated": 189,
+      "refusals": 0,
+      "reviewedAcceptedInstances": 1,
+      "reviewedRejectedInstances": 2,
+      "reviewedUnassertedInstances": 0
+    }
+  },
+  "findings": [],
+  "inputs": {
+    "authoredJsonSchema": {
+      "digest": "126b7d941f98c61dbc7ced57757552e865dad76534be1ce608248ac837ee1acb",
+      "files": [
+        {
+          "relativePath": "authored.schema.json",
+          "sha256": "df0f9b32f969b11c516dcb28909cdf31b8f954ab62d86c2dc53d0c8f5a10c2fb"
+        }
+      ],
+      "input": "contracts/authored.schema.json"
+    },
+    "generatedJsonSchema": {
+      "digest": "8912c16df3f7a8c002faa687eb1f68b317f751efc15b1a2cde5ce37e022c5e8b",
+      "files": [
+        {
+          "relativePath": "typespec.generated.schema.json",
+          "sha256": "ab1c088e4eba883259dcdbcb6e25a9955dcd1776fe7467bdd39c819f461569a7"
+        }
+      ],
+      "input": ".typespec-json-schema-validator/generated/typespec.generated.schema.json"
+    },
+    "mapping": null,
+    "typespec": {
+      "digest": "906087a85228de4c44c8694d4146393676405a8b384d2edc431fc933b522b1cb",
+      "files": [
+        {
+          "path": "main.tsp",
+          "sha256": "ecb43b8b22903f01a935cf8647aad1b8a1a133437844d4663ff283f97fad52b9"
+        }
+      ],
+      "input": "contracts/main.tsp"
+    }
+  },
+  "runId": "58b491419c7e25b4762c8d2dd3d59505c2fc71a5ac0a5c61aa242b2d569ad1f3",
+  "schema": "ores.typespec-json-schema-validator.report/v1",
+  "status": "passed",
+  "toolchain": {
+    "jsonSchemaEmitter": "@typespec/json-schema",
+    "typespecCompiler": {
+      "available": true,
+      "command": "/Users/alexandermills/codes/ores-truffle-oreslang/oreslang-n8n-make-zapier-app/dependencies/tjsv/node_modules/@typespec/compiler/cmd/tsp.js",
+      "version": "1.17.0"
+    },
+    "validator": {
+      "name": "@oresoftware/typespec-json-schema-validator",
+      "version": "0.1.2"
+    }
+  },
+  "zeroUnexplainedFindings": true
+}

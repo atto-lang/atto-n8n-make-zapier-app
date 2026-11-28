@@ -1,0 +1,148 @@
+{
+  "info": {
+    "description": "Development SSR slice. No persistence, authentication, or durable workflow execution is served yet.",
+    "title": "ores-workflows-development",
+    "version": "0.1.0"
+  },
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "openapi": "3.1.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "dashboard",
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        },
+        "summary": "Server-rendered development dashboard",
+        "x-ores-rpc": {
+          "contractSha256": "e6652aebd9612e0aef08d4bf3817460fd3892f5ea6f3cf45cb81c41185d5ce15",
+          "delivery": "direct",
+          "key": "dashboard",
+          "transports": [
+            "http"
+          ]
+        }
+      }
+    },
+    "/healthz": {
+      "get": {
+        "operationId": "healthz",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "durable_execution": {
+                      "const": false
+                    },
+                    "status": {
+                      "const": "development"
+                    },
+                    "websocket": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "durable_execution",
+                    "websocket"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "ok"
+          }
+        },
+        "x-ores-rpc": {
+          "contractSha256": "e6652aebd9612e0aef08d4bf3817460fd3892f5ea6f3cf45cb81c41185d5ce15",
+          "delivery": "direct",
+          "key": "healthz",
+          "transports": [
+            "http"
+          ]
+        }
+      }
+    },
+    "/preview": {
+      "post": {
+        "operationId": "preview",
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        },
+        "summary": "Read-only illustrative HTML fragment; does not create a run",
+        "x-ores-rpc": {
+          "contractSha256": "e6652aebd9612e0aef08d4bf3817460fd3892f5ea6f3cf45cb81c41185d5ce15",
+          "delivery": "direct",
+          "key": "preview",
+          "transports": [
+            "http"
+          ]
+        }
+      }
+    },
+    "/static/app.css": {
+      "get": {
+        "operationId": "css_asset",
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        },
+        "x-ores-rpc": {
+          "contractSha256": "e6652aebd9612e0aef08d4bf3817460fd3892f5ea6f3cf45cb81c41185d5ce15",
+          "delivery": "direct",
+          "key": "css_asset",
+          "transports": [
+            "http"
+          ]
+        }
+      }
+    },
+    "/static/htmx.min.js": {
+      "get": {
+        "operationId": "htmx_asset",
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        },
+        "x-ores-rpc": {
+          "contractSha256": "e6652aebd9612e0aef08d4bf3817460fd3892f5ea6f3cf45cb81c41185d5ce15",
+          "delivery": "direct",
+          "key": "htmx_asset",
+          "transports": [
+            "http"
+          ]
+        }
+      }
+    },
+    "/ws": {
+      "get": {
+        "operationId": "websocket",
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        },
+        "summary": "Returns 501 until session WebSocket adapter is implemented",
+        "x-ores-rpc": {
+          "contractSha256": "e6652aebd9612e0aef08d4bf3817460fd3892f5ea6f3cf45cb81c41185d5ce15",
+          "delivery": "direct",
+          "key": "websocket",
+          "transports": [
+            "http"
+          ]
+        }
+      }
+    }
+  },
+  "x-ores-rpc-contract-sha256": "e6652aebd9612e0aef08d4bf3817460fd3892f5ea6f3cf45cb81c41185d5ce15",
+  "x-ores-rpc-schema-version": "1.0.0"
+}
